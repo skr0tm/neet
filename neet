@@ -130,6 +130,14 @@ function episode
 	end
 end
 
+# A search in the media directory with fzf to play files directly
+function fuzzyfind
+  cd $mediadir
+  set file (find * -type f | fzf --query="$1" --multi --select-1 --exit-0)
+  echo "Playing file $file"
+	eval {$playercommand} (string escape $mediadir/$file) >/dev/null 2>&1
+end
+
 # This function executes the userfunction and starts mpv
 function play
 	# Debug output
@@ -151,7 +159,7 @@ function play
 	userfunction
 
 	# Start mpv
-	eval {$playercommand} (string escape $mediadir/$path/$file)
+	eval {$playercommand} (string escape $mediadir/$path/$file) >/dev/null 2>&1
 end
 
 
@@ -187,6 +195,7 @@ getopts $argv | while read -l opt val
 			echo '  -n,   --next            set and play next episode'
 			echo '  -p,   --previous        set and play previous episode'
 			echo '  -s,   --set             set and play specified episode'
+			echo '  -f,   --find            find a specific file'
 			echo '  -h,   --help            print help and exit'
 			exit 0
 		case d debug
@@ -254,6 +263,9 @@ getopts $argv | while read -l opt val
 				echo "Please specify a set episode number." >/dev/stderr
 				exit 1
 			end
+    case f find
+      fuzzyfind
+      exit 0
 		case '*'
 			echo 'Invalid argument, use -h for a list of arguments.' >/dev/stderr
 			exit 1
